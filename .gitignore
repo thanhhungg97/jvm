@@ -1,0 +1,15 @@
+# Binaries
+simplejvm
+*.exe
+
+# Go build cache (when using local cache)
+.cache/
+
+# Java compiled classes (keep examples clean)
+examples/*.class
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
