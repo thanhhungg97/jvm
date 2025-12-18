@@ -6,27 +6,31 @@ import (
 	"os"
 	"simplejvm/classfile"
 	"simplejvm/interpreter"
+	"simplejvm/runtime"
 )
 
 func main() {
 	verbose := flag.Bool("v", false, "verbose mode - print executed instructions")
 	trace := flag.String("trace", "", "trace calls to a method (e.g., -trace fibonacci)")
+	showStats := flag.Bool("stats", false, "show heap statistics after execution")
 	flag.Parse()
 
 	args := flag.Args()
 	if len(args) < 1 {
-		fmt.Println("Usage: simplejvm [-v] [-trace method] <classfile>")
+		fmt.Println("Usage: simplejvm [-v] [-trace method] [-stats] <classfile>")
 		fmt.Println()
 		fmt.Println("A minimal JVM implementation in Go")
 		fmt.Println()
 		fmt.Println("Options:")
 		fmt.Println("  -v              verbose mode (print bytecode execution)")
 		fmt.Println("  -trace method   trace calls/returns for a method")
+		fmt.Println("  -stats          show heap statistics after execution")
 		fmt.Println()
 		fmt.Println("Examples:")
 		fmt.Println("  simplejvm HelloWorld.class")
 		fmt.Println("  simplejvm -v HelloWorld.class")
 		fmt.Println("  simplejvm -trace fibonacci Calculator.class")
+		fmt.Println("  simplejvm -stats ArrayTest.class")
 		os.Exit(1)
 	}
 
@@ -42,8 +46,12 @@ func main() {
 	fmt.Printf("Loaded class: %s (Java %d)\n", cf.ClassName(), cf.MajorVersion-44)
 	fmt.Println("---")
 
-	// Create interpreter and execute
-	interp := interpreter.NewInterpreter(*verbose)
+	// Create JVM instance
+	jvm := runtime.NewJVM()
+	defer jvm.Shutdown()
+
+	// Create interpreter with JVM
+	interp := interpreter.NewInterpreterWithJVM(*verbose, jvm)
 
 	// Enable tracing if requested
 	if *trace != "" {
@@ -59,4 +67,16 @@ func main() {
 
 	fmt.Println("---")
 	fmt.Println("Execution completed.")
+
+	// Show heap statistics if requested
+	if *showStats {
+		stats := jvm.GetHeap().Stats()
+		fmt.Println("---")
+		fmt.Println("Heap Statistics:")
+		fmt.Printf("  Allocations:  %d\n", stats.AllocCount)
+		fmt.Printf("  Freed:        %d\n", stats.FreeCount)
+		fmt.Printf("  Live Objects: %d\n", stats.LiveObjects)
+		fmt.Printf("  Heap Size:    %d bytes\n", stats.TotalBytes)
+		fmt.Printf("  GC Runs:      %d\n", stats.GCRuns)
+	}
 }

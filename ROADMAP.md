@@ -14,117 +14,136 @@
 - [x] Bitwise operations
 - [x] Recursion
 
-## Phase 1: Arrays & Strings
+## Phase 1: Arrays & Strings ✓
 
 ```go
-// Add to interpreter
-case NEWARRAY:     // Create primitive array
-case ANEWARRAY:    // Create reference array
-case ARRAYLENGTH:  // Get array length
-case IALOAD:       // Load int from array
-case IASTORE:      // Store int to array
-case AALOAD:       // Load reference from array
-case AASTORE:      // Store reference to array
-case CALOAD:       // Load char from array (for strings)
-case CASTORE:      // Store char to array
+// Implemented in interpreter
+case NEWARRAY:     // Create primitive array ✓
+case ANEWARRAY:    // Create reference array ✓
+case ARRAYLENGTH:  // Get array length ✓
+case IALOAD:       // Load int from array ✓
+case IASTORE:      // Store int to array ✓
+case AALOAD:       // Load reference from array ✓
+case AASTORE:      // Store reference to array ✓
+case CALOAD:       // Load char from array (for strings) ✓
+case CASTORE:      // Store char to array ✓
+case LALOAD:       // Load long from array ✓
+case LASTORE:      // Store long to array ✓
+case BALOAD:       // Load byte from array ✓
+case BASTORE:      // Store byte to array ✓
+case SALOAD:       // Load short from array ✓
+case SASTORE:      // Store short to array ✓
+case FALOAD:       // Load float from array ✓
+case FASTORE:      // Store float to array ✓
+case DALOAD:       // Load double from array ✓
+case DASTORE:      // Store double to array ✓
 ```
+
+Added: `runtime/array.go` with Array type supporting all primitive types and references.
 
 Benefits: Process command line args, use String methods
 
-## Phase 2: Object Support
+## Phase 2: Object Support ✓
 
 ```go
-// Add to runtime
+// Added to runtime/object.go
 type Object struct {
-    Class  *classfile.ClassFile
-    Fields map[string]interface{}
+    Class      *classfile.ClassFile  ✓
+    Fields     map[string]any        ✓
+    FieldSlots map[string]int64      ✓
 }
 
-// Add to interpreter
-case NEW:           // Create new object (already partial)
-case INVOKESPECIAL: // Call constructor <init>
-case INVOKEVIRTUAL: // Call instance method
-case GETFIELD:      // Get object field
-case PUTFIELD:      // Set object field
+// Implemented in interpreter
+case NEW:           // Create new object ✓
+case INVOKESPECIAL: // Call constructor <init> ✓
+case INVOKEVIRTUAL: // Call instance method ✓
+case GETFIELD:      // Get object field ✓
+case PUTFIELD:      // Set object field ✓
 ```
 
 Benefits: Create objects, call instance methods
 
-## Phase 3: Exception Handling
+## Phase 3: Exception Handling ✓
 
 ```go
-// Add to frame
-type Frame struct {
-    // ... existing fields
-    ExceptionHandlers []*ExceptionHandler
+// Added to runtime/exception.go
+type JavaException struct {
+    Object    *Object  ✓
+    ClassName string   ✓
+    Message   string   ✓
 }
 
-// Add to interpreter
-case ATHROW:        // Throw exception
-// Handle exception table lookups
+func FindExceptionHandler(...) int ✓
+
+// Implemented in interpreter
+case ATHROW:        // Throw exception ✓
+// Exception table lookups ✓
+// Runtime exceptions (ArithmeticException, etc.) ✓
 ```
 
 Benefits: try/catch/finally, proper error handling
 
-## Phase 4: Inheritance & Interfaces
+## Phase 4: Inheritance & Interfaces ✓
 
 ```go
-// Add to runtime
-func (t *Thread) ResolveMethod(class, name, descriptor string) *MethodInfo {
-    // Walk up class hierarchy
-    // Check interfaces
-}
-
-// Add to interpreter
-case CHECKCAST:     // Type checking
-case INSTANCEOF:    // Type testing
+// Implemented in interpreter
+case CHECKCAST:     // Type checking ✓
+case INSTANCEOF:    // Type testing ✓
 ```
+
+Note: Basic type checking implemented. Full inheritance hierarchy walking planned for future.
 
 Benefits: Polymorphism, interface implementations
 
-## Phase 5: Native Methods
+## Phase 5: Native Methods ✓
 
 ```go
-// Create native method registry
-var nativeMethods = map[string]func(frame *Frame){
-    "java/lang/System.currentTimeMillis": nativeCurrentTimeMillis,
-    "java/io/FileInputStream.read0":      nativeFileRead,
-    "java/net/Socket.connect0":           nativeSocketConnect,
-}
+// Added to runtime/native.go
+type NativeRegistry struct { ... } ✓
+
+// Implemented natives:
+- System.currentTimeMillis ✓
+- System.nanoTime ✓
+- System.arraycopy ✓
+- Math.abs, Math.max, Math.min ✓
+- Thread.sleep ✓
+- Object.hashCode ✓
+- and more...
 ```
 
 Benefits: File I/O, networking, system calls
 
-## Phase 6: Threading
+## Phase 6: Threading ✓
 
 ```go
-// Add to runtime
+// Added to runtime/jvm.go
 type JVM struct {
-    Threads []*Thread
-    Heap    *Heap
-    mutex   sync.Mutex
+    mainThread  *Thread          ✓
+    threads     []*Thread        ✓
+    monitors    map[any]*Monitor ✓
+    heap        *Heap            ✓
 }
 
-// Add to interpreter
-case MONITORENTER:  // synchronized block enter
-case MONITOREXIT:   // synchronized block exit
+type Monitor struct { ... } ✓
+
+// Implemented in interpreter
+case MONITORENTER:  // synchronized block enter ✓
+case MONITOREXIT:   // synchronized block exit ✓
 ```
 
 Benefits: Concurrent code, parallel execution
 
-## Phase 7: Garbage Collection
+## Phase 7: Garbage Collection ✓
 
 ```go
-// Add to runtime
+// Added to runtime/heap.go
 type Heap struct {
-    objects   []*Object
-    allocator *Allocator
+    objects   map[uint64]any ✓
+    gcEnabled bool           ✓
 }
 
-func (h *Heap) GC() {
-    // Mark reachable objects
-    // Sweep unreachable objects
-}
+func (h *Heap) GC(roots []any) ✓  // Mark-sweep GC
+func (h *Heap) Stats() HeapStats ✓
 ```
 
 Benefits: Long-running applications, memory management
@@ -169,4 +188,6 @@ var networkNatives = map[string]func(frame *Frame){
 ```
 
 This bypasses most JVM complexity while providing networking capability.
+
+
 

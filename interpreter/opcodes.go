@@ -1,5 +1,82 @@
 package interpreter
 
+// OpcodeCategory represents the category of a bytecode instruction
+type OpcodeCategory uint8
+
+const (
+	CategoryUnknown OpcodeCategory = iota
+	CategoryConst                  // Constants: iconst, ldc, etc.
+	CategoryLoad                   // Loads: iload, aload, etc.
+	CategoryStore                  // Stores: istore, astore, etc.
+	CategoryMath                   // Arithmetic, bitwise, stack ops
+	CategoryControl                // Branches, returns
+	CategoryArray                  // Array operations
+	CategoryObject                 // Object operations, fields
+	CategoryInvoke                 // Method invocations
+)
+
+// opcodeCategories maps each opcode to its category
+var opcodeCategories [256]OpcodeCategory
+
+func init() {
+	// Constants
+	for _, op := range []uint8{NOP, ACONST_NULL, ICONST_M1, ICONST_0, ICONST_1, ICONST_2,
+		ICONST_3, ICONST_4, ICONST_5, LCONST_0, LCONST_1, BIPUSH, SIPUSH, LDC, LDC_W, LDC2_W} {
+		opcodeCategories[op] = CategoryConst
+	}
+
+	// Loads
+	for _, op := range []uint8{ILOAD, LLOAD, ALOAD, ILOAD_0, ILOAD_1, ILOAD_2, ILOAD_3,
+		LLOAD_0, LLOAD_1, LLOAD_2, LLOAD_3, ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3} {
+		opcodeCategories[op] = CategoryLoad
+	}
+
+	// Stores
+	for _, op := range []uint8{ISTORE, LSTORE, ASTORE, ISTORE_0, ISTORE_1, ISTORE_2, ISTORE_3,
+		LSTORE_0, LSTORE_1, LSTORE_2, LSTORE_3, ASTORE_0, ASTORE_1, ASTORE_2, ASTORE_3} {
+		opcodeCategories[op] = CategoryStore
+	}
+
+	// Math/Stack
+	for _, op := range []uint8{POP, POP2, DUP, DUP_X1, DUP_X2, DUP2, SWAP,
+		IADD, LADD, ISUB, LSUB, IMUL, LMUL, IDIV, LDIV, IREM, LREM, INEG, LNEG,
+		ISHL, LSHL, ISHR, LSHR, IUSHR, LUSHR, IAND, LAND, IOR, LOR, IXOR, LXOR,
+		IINC, I2L, I2F, I2D, L2I, LCMP} {
+		opcodeCategories[op] = CategoryMath
+	}
+
+	// Control
+	for _, op := range []uint8{IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE,
+		IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE,
+		IF_ACMPEQ, IF_ACMPNE, GOTO, JSR, RET, TABLESWITCH, LOOKUPSWITCH,
+		IRETURN, LRETURN, FRETURN, DRETURN, ARETURN, RETURN, IFNULL, IFNONNULL, GOTO_W} {
+		opcodeCategories[op] = CategoryControl
+	}
+
+	// Array
+	for _, op := range []uint8{IALOAD, LALOAD, FALOAD, DALOAD, AALOAD, BALOAD, CALOAD, SALOAD,
+		IASTORE, LASTORE, FASTORE, DASTORE, AASTORE, BASTORE, CASTORE, SASTORE,
+		NEWARRAY, ANEWARRAY, ARRAYLENGTH} {
+		opcodeCategories[op] = CategoryArray
+	}
+
+	// Object
+	for _, op := range []uint8{GETSTATIC, PUTSTATIC, GETFIELD, PUTFIELD, NEW,
+		ATHROW, CHECKCAST, INSTANCEOF, MONITORENTER, MONITOREXIT} {
+		opcodeCategories[op] = CategoryObject
+	}
+
+	// Invoke
+	for _, op := range []uint8{INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE, INVOKEDYNAMIC} {
+		opcodeCategories[op] = CategoryInvoke
+	}
+}
+
+// Category returns the category of an opcode
+func Category(opcode uint8) OpcodeCategory {
+	return opcodeCategories[opcode]
+}
+
 // JVM Bytecode opcodes
 const (
 	// Constants
@@ -132,6 +209,26 @@ const (
 	ARETURN      = 0xB0
 	RETURN       = 0xB1
 
+	// Array loads
+	IALOAD = 0x2E
+	LALOAD = 0x2F
+	FALOAD = 0x30
+	DALOAD = 0x31
+	AALOAD = 0x32
+	BALOAD = 0x33
+	CALOAD = 0x34
+	SALOAD = 0x35
+
+	// Array stores
+	IASTORE = 0x4F
+	LASTORE = 0x50
+	FASTORE = 0x51
+	DASTORE = 0x52
+	AASTORE = 0x53
+	BASTORE = 0x54
+	CASTORE = 0x55
+	SASTORE = 0x56
+
 	// References
 	GETSTATIC       = 0xB2
 	PUTSTATIC       = 0xB3
@@ -149,6 +246,10 @@ const (
 	ATHROW          = 0xBF
 	CHECKCAST       = 0xC0
 	INSTANCEOF      = 0xC1
+
+	// Synchronization
+	MONITORENTER = 0xC2
+	MONITOREXIT  = 0xC3
 
 	// Extended
 	IFNULL    = 0xC6
