@@ -279,3 +279,27 @@ func (s *OperandStack) IsEmpty() bool {
 func (s *OperandStack) Clear() {
 	s.size = 0
 }
+
+// PeekSlot peeks at a slot value at the given index from bottom (0 = bottom)
+func (s *OperandStack) PeekSlot(index int) int64 {
+	if index < 0 || index >= s.size {
+		return 0
+	}
+	return s.slots[index]
+}
+
+// PeekRef peeks at a reference at the given index from bottom (0 = bottom)
+func (s *OperandStack) PeekRef(index int) interface{} {
+	if index < 0 || index >= s.size {
+		return nil
+	}
+	return s.refs[index]
+}
+
+// HasRefAt returns true if the given index has a reference (vs primitive)
+func (s *OperandStack) HasRefAt(index int) bool {
+	if index < 0 || index >= s.size {
+		return false
+	}
+	return s.refs[index] != nil
+}

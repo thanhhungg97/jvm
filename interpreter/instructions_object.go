@@ -144,6 +144,7 @@ func (i *Interpreter) executeObjectInstruction(frame *runtime.Frame, opcode uint
 		var obj interface{}
 		if cf != nil {
 			obj = runtime.NewObject(cf)
+			i.trackAlloc(obj) // Track on heap for GC
 		} else {
 			// Fallback to placeholder for system classes we don't support
 			obj = fmt.Sprintf("Object<%s>", className)

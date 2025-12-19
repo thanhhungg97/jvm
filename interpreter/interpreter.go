@@ -24,6 +24,7 @@ import (
 type Interpreter struct {
 	thread       *runtime.Thread
 	verbose      bool
+	debug        bool // Enhanced frame debugging
 	trace        bool
 	traceMethod  string
 	staticFields map[string]any
@@ -59,10 +60,20 @@ func (i *Interpreter) SetTrace(methodName string) {
 	i.traceMethod = methodName
 }
 
+// SetDebug enables enhanced frame debugging
+func (i *Interpreter) SetDebug(enabled bool) {
+	i.debug = enabled
+}
+
 // Execute runs the main method of a class
 func (i *Interpreter) Execute(cf *classfile.ClassFile) error {
 	className := cf.ClassName()
 	i.thread.LoadClass(className, cf)
+
+	// Print constant pool in debug mode
+	if i.debug {
+		PrintConstantPool(cf.ConstantPool)
+	}
 
 	mainMethod := cf.GetMethod("main", "([Ljava/lang/String;)V")
 	if mainMethod == nil {
@@ -111,11 +122,14 @@ func (i *Interpreter) run() error {
 			continue
 		}
 
+		pc := frame.PC
 		opcode := frame.ReadU1()
 		methodName := frame.Method.Name(frame.Class.ConstantPool)
 
-		if i.verbose {
-			fmt.Printf("[%s] PC=%d opcode=0x%02X\n", methodName, frame.PC-1, opcode)
+		if i.debug {
+			i.printFrameDebug(frame, pc, opcode)
+		} else if i.verbose {
+			fmt.Printf("[%s] PC=%d opcode=0x%02X\n", methodName, pc, opcode)
 		}
 
 		if err := i.executeInstruction(frame, opcode); err != nil {
@@ -184,11 +198,14 @@ func (i *Interpreter) runUntilFrameCompletes(targetFrame *runtime.Frame) error {
 			continue
 		}
 
+		pc := frame.PC
 		opcode := frame.ReadU1()
 
-		if i.verbose {
+		if i.debug {
+			i.printFrameDebug(frame, pc, opcode)
+		} else if i.verbose {
 			methodName := frame.Method.Name(frame.Class.ConstantPool)
-			fmt.Printf("[%s] PC=%d opcode=0x%02X\n", methodName, frame.PC-1, opcode)
+			fmt.Printf("[%s] PC=%d opcode=0x%02X\n", methodName, pc, opcode)
 		}
 
 		if err := i.executeInstruction(frame, opcode); err != nil {

@@ -11,24 +11,27 @@ import (
 
 func main() {
 	verbose := flag.Bool("v", false, "verbose mode - print executed instructions")
+	debug := flag.Bool("debug", false, "enhanced frame debugging - show locals and stack")
 	trace := flag.String("trace", "", "trace calls to a method (e.g., -trace fibonacci)")
 	showStats := flag.Bool("stats", false, "show heap statistics after execution")
 	flag.Parse()
 
 	args := flag.Args()
 	if len(args) < 1 {
-		fmt.Println("Usage: simplejvm [-v] [-trace method] [-stats] <classfile>")
+		fmt.Println("Usage: simplejvm [-v] [-debug] [-trace method] [-stats] <classfile>")
 		fmt.Println()
 		fmt.Println("A minimal JVM implementation in Go")
 		fmt.Println()
 		fmt.Println("Options:")
 		fmt.Println("  -v              verbose mode (print bytecode execution)")
+		fmt.Println("  -debug          enhanced frame debugging (locals, stack)")
 		fmt.Println("  -trace method   trace calls/returns for a method")
 		fmt.Println("  -stats          show heap statistics after execution")
 		fmt.Println()
 		fmt.Println("Examples:")
 		fmt.Println("  simplejvm HelloWorld.class")
 		fmt.Println("  simplejvm -v HelloWorld.class")
+		fmt.Println("  simplejvm -debug Fib6.class")
 		fmt.Println("  simplejvm -trace fibonacci Calculator.class")
 		fmt.Println("  simplejvm -stats ArrayTest.class")
 		os.Exit(1)
@@ -52,6 +55,13 @@ func main() {
 
 	// Create interpreter with JVM
 	interp := interpreter.NewInterpreterWithJVM(*verbose, jvm)
+
+	// Enable debug mode if requested
+	if *debug {
+		interp.SetDebug(true)
+		fmt.Println("Debug mode enabled - showing frame state")
+		fmt.Println("---")
+	}
 
 	// Enable tracing if requested
 	if *trace != "" {

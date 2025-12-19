@@ -100,4 +100,3 @@ func (o *Object) IsInstanceOf(className string) bool {
 	// TODO: Handle inheritance hierarchy
 	return o.Class.ClassName() == className
 }
-

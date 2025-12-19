@@ -221,6 +221,7 @@ func (i *Interpreter) executeArrayInstruction(frame *runtime.Frame, opcode uint8
 			return true, fmt.Errorf("NegativeArraySizeException: %d", count)
 		}
 		arr := runtime.NewPrimitiveArray(runtime.ArrayType(atype), count)
+		i.trackAlloc(arr) // Track on heap for GC
 		stack.PushRef(arr)
 
 	// Create new reference array
@@ -232,6 +233,7 @@ func (i *Interpreter) executeArrayInstruction(frame *runtime.Frame, opcode uint8
 			return true, fmt.Errorf("NegativeArraySizeException: %d", count)
 		}
 		arr := runtime.NewReferenceArray(className, count)
+		i.trackAlloc(arr) // Track on heap for GC
 		stack.PushRef(arr)
 
 	// Get array length
