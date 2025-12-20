@@ -76,9 +76,9 @@ func Parse(data []byte) (*ClassFile, error) {
 	cf.ThisClass = reader.ReadU2()
 	cf.SuperClass = reader.ReadU2()
 	cf.Interfaces = reader.ReadU2s()
-	cf.Fields = readFields(reader, cf.ConstantPool)
-	cf.Methods = readMethods(reader, cf.ConstantPool)
-	cf.Attributes = readAttributes(reader, cf.ConstantPool)
+	cf.Fields = readFields(reader)
+	cf.Methods = readMethods(reader)
+	cf.Attributes = readAttributes(reader)
 
 	return cf, nil
 }
@@ -92,7 +92,7 @@ func ParseFile(path string) (*ClassFile, error) {
 	return Parse(data)
 }
 
-func readFields(reader *ClassReader, cp ConstantPool) []*FieldInfo {
+func readFields(reader *ClassReader) []*FieldInfo {
 	count := reader.ReadU2()
 	fields := make([]*FieldInfo, count)
 	for i := range fields {
@@ -100,13 +100,13 @@ func readFields(reader *ClassReader, cp ConstantPool) []*FieldInfo {
 			AccessFlags:     reader.ReadU2(),
 			NameIndex:       reader.ReadU2(),
 			DescriptorIndex: reader.ReadU2(),
-			Attributes:      readAttributes(reader, cp),
+			Attributes:      readAttributes(reader),
 		}
 	}
 	return fields
 }
 
-func readMethods(reader *ClassReader, cp ConstantPool) []*MethodInfo {
+func readMethods(reader *ClassReader) []*MethodInfo {
 	count := reader.ReadU2()
 	methods := make([]*MethodInfo, count)
 	for i := range methods {
@@ -114,13 +114,13 @@ func readMethods(reader *ClassReader, cp ConstantPool) []*MethodInfo {
 			AccessFlags:     reader.ReadU2(),
 			NameIndex:       reader.ReadU2(),
 			DescriptorIndex: reader.ReadU2(),
-			Attributes:      readAttributes(reader, cp),
+			Attributes:      readAttributes(reader),
 		}
 	}
 	return methods
 }
 
-func readAttributes(reader *ClassReader, cp ConstantPool) []*AttributeInfo {
+func readAttributes(reader *ClassReader) []*AttributeInfo {
 	count := reader.ReadU2()
 	attrs := make([]*AttributeInfo, count)
 	for i := range attrs {

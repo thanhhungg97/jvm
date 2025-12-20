@@ -169,13 +169,13 @@ func captureOutput(t *testing.T, fn func() error) string {
 	fnErr := fn()
 
 	// Close writer and restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = oldStdout
 
 	// Read captured output
 	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	r.Close()
+	_, _ = buf.ReadFrom(r)
+	_ = r.Close()
 
 	if fnErr != nil {
 		t.Errorf("Execution error: %v", fnErr)
@@ -235,7 +235,7 @@ func TestCompileAndRun(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	// Write a simple Java file
 	javaCode := `
@@ -295,7 +295,7 @@ func BenchmarkCalculator(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		jvm := runtime.NewJVM()
 		interp := interpreter.NewInterpreterWithJVM(false, jvm)
-		interp.Execute(cf)
+		_ = interp.Execute(cf)
 		jvm.Shutdown()
 	}
 }

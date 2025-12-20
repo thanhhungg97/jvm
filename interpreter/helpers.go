@@ -594,26 +594,6 @@ func PrintConstantPool(cp classfile.ConstantPool) {
 	fmt.Println()
 }
 
-// formatRef formats a reference value for display
-func formatRef(ref any) string {
-	if ref == nil {
-		return "null"
-	}
-	switch v := ref.(type) {
-	case *runtime.Object:
-		return fmt.Sprintf("Object<%s>@%p", v.ClassName(), v)
-	case *runtime.Array:
-		return fmt.Sprintf("Array[%d]@%p", v.Length, v)
-	case string:
-		if len(v) > 20 {
-			return fmt.Sprintf("\"%s...\"", v[:20])
-		}
-		return fmt.Sprintf("\"%s\"", v)
-	default:
-		return fmt.Sprintf("%T", v)
-	}
-}
-
 // getOpcodeName returns a human-readable name for an opcode
 func getOpcodeName(opcode uint8) string {
 	names := map[uint8]string{

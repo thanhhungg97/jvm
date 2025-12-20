@@ -130,6 +130,7 @@ func TestNewInterpreter(t *testing.T) {
 	interp := NewInterpreter(false)
 	if interp == nil {
 		t.Fatal("NewInterpreter returned nil")
+		return // unreachable but satisfies staticcheck
 	}
 	if interp.thread == nil {
 		t.Error("Interpreter thread is nil")
@@ -145,6 +146,7 @@ func TestNewInterpreterWithJVM(t *testing.T) {
 
 	if interp == nil {
 		t.Fatal("NewInterpreterWithJVM returned nil")
+		return // unreachable but satisfies staticcheck
 	}
 	if interp.thread == nil {
 		t.Error("Interpreter thread is nil")
@@ -188,5 +190,3 @@ func TestFindExceptionHandler(t *testing.T) {
 		t.Errorf("FindExceptionHandler = %d, want -1", handler)
 	}
 }
-
-

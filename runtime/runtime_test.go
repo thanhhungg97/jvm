@@ -24,6 +24,7 @@ func TestNewPrimitiveArray(t *testing.T) {
 			arr := NewPrimitiveArray(tt.atype, tt.length)
 			if arr == nil {
 				t.Fatal("NewPrimitiveArray returned nil")
+				return // unreachable but satisfies staticcheck
 			}
 			if arr.Length != tt.length {
 				t.Errorf("Length = %d, want %d", arr.Length, tt.length)
@@ -352,5 +353,3 @@ func TestJVMIsRunning(t *testing.T) {
 		t.Error("JVM should not be running after shutdown")
 	}
 }
-
-

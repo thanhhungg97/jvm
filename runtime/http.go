@@ -74,10 +74,10 @@ func (s *HTTPServer) Start(port int) error {
 				w.Header().Set("Content-Type", "text/plain")
 			}
 			w.WriteHeader(handler.StatusCode)
-			io.WriteString(w, handler.Response)
+			_, _ = io.WriteString(w, handler.Response)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			io.WriteString(w, "Not Found")
+			_, _ = io.WriteString(w, "Not Found")
 		}
 	})
 
@@ -141,69 +141,6 @@ func init() {
 	Natives.Register("simplejvm/http/HttpServer", "isRunning", "()Z", nativeSimpleHttpIsRunning)
 }
 
-func nativeHttpServerCreate(frame *Frame) error {
-	httpServer = NewHTTPServer()
-	return nil
-}
-
-func nativeHttpServerStart(frame *Frame) error {
-	port := frame.OperandStack.PopInt()
-	if httpServer == nil {
-		httpServer = NewHTTPServer()
-	}
-	err := httpServer.Start(int(port))
-	if err != nil {
-		frame.OperandStack.PushInt(0) // false
-	} else {
-		frame.OperandStack.PushInt(1) // true
-	}
-	return nil
-}
-
-func nativeHttpServerStop(frame *Frame) error {
-	if httpServer != nil {
-		httpServer.Stop()
-	}
-	return nil
-}
-
-func nativeHttpServerHandle(frame *Frame) error {
-	stack := frame.OperandStack
-	statusCode := stack.PopInt()
-	response := popString(stack)
-	path := popString(stack)
-	method := popString(stack)
-
-	if httpServer == nil {
-		httpServer = NewHTTPServer()
-	}
-	httpServer.RegisterHandler(method, path, response, int(statusCode), "text/plain")
-	return nil
-}
-
-func nativeHttpServerHandleJson(frame *Frame) error {
-	stack := frame.OperandStack
-	statusCode := stack.PopInt()
-	response := popString(stack)
-	path := popString(stack)
-	method := popString(stack)
-
-	if httpServer == nil {
-		httpServer = NewHTTPServer()
-	}
-	httpServer.RegisterHandler(method, path, response, int(statusCode), "application/json")
-	return nil
-}
-
-// popString pops a string from the operand stack
-func popString(stack *OperandStack) string {
-	ref := stack.PopRef()
-	if s, ok := ref.(string); ok {
-		return s
-	}
-	return fmt.Sprintf("%v", ref)
-}
-
 // =============== SimpleHttp - Integer-based API for current JVM limitations ===============
 
 // Simple mapping: method 1=GET, 2=POST, 3=PUT, 4=DELETE
@@ -241,7 +178,7 @@ func nativeSimpleHttpStart(frame *Frame) error {
 
 func nativeSimpleHttpStop(frame *Frame) error {
 	if httpServer != nil {
-		httpServer.Stop()
+		_ = httpServer.Stop()
 		httpServer = nil
 	}
 	return nil

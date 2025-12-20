@@ -1,0 +1,36 @@
+# golangci-lint v2 configuration
+# Run with: golangci-lint run ./...
+
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  default: standard
+  enable:
+    - misspell    # Finds commonly misspelled English words
+
+formatters:
+  enable:
+    - gofmt       # Checks if code is gofmt-ed
+    - goimports   # Checks imports are sorted
+
+linters-settings:
+  misspell:
+    locale: US
+
+issues:
+  # Maximum issues count per one linter
+  max-issues-per-linter: 50
+  
+  # Maximum count of issues with the same text
+  max-same-issues: 5
+
+  # Exclude some linters from running on tests files
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck  # Tests often ignore errors intentionally

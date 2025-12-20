@@ -7,9 +7,8 @@ import (
 	"time"
 )
 
-// Global scheduler for fibers
-var globalScheduler *Scheduler
-var globalSchedulerOnce sync.Once
+// Global scheduler for fibers (reserved for future use)
+var _ *Scheduler // globalScheduler - reserved
 var fiberOutputMu sync.Mutex
 
 // Channel for fiber task execution
@@ -55,15 +54,6 @@ func init() {
 	// Parallel execution helpers
 	Natives.Register("Parallel", "run", "(I)V", nativeParallelRun)
 	Natives.Register("Parallel", "forEach", "(II)V", nativeParallelForEach)
-}
-
-// getScheduler returns the global scheduler, creating it if needed
-func getScheduler() *Scheduler {
-	globalSchedulerOnce.Do(func() {
-		globalScheduler = NewScheduler(nil)
-		globalScheduler.Start()
-	})
-	return globalScheduler
 }
 
 // nativeFiberSpawn spawns a new fiber
@@ -286,4 +276,3 @@ func nativeParallelForEach(frame *Frame) error {
 	wg.Wait()
 	return nil
 }
-

@@ -2,7 +2,6 @@ package runtime
 
 import (
 	"fmt"
-	"os"
 	"time"
 	"unsafe"
 )
@@ -357,16 +356,6 @@ func nativeGC(frame *Frame) error {
 }
 
 // =============== File I/O natives ===============
-
-// FileHandle represents an open file
-type FileHandle struct {
-	File *os.File
-	Path string
-}
-
-// File handles storage
-var fileHandles = make(map[int32]*FileHandle)
-var nextFileHandle int32 = 100
 
 // RegisterFileNatives adds file I/O native methods
 func init() {

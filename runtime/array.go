@@ -143,4 +143,3 @@ func arrayTypeChar(t ArrayType) rune {
 		return '?'
 	}
 }
-

@@ -109,5 +109,3 @@ func (cq *CallbackQueue) Len() int {
 	defer cq.mu.Unlock()
 	return len(cq.callbacks)
 }
-
-

@@ -13,7 +13,6 @@ type Scheduler struct {
 	jvm          *JVM
 	fibers       map[int64]*Fiber
 	readyQueue   *FiberQueue
-	currentFiber *Fiber
 	mu           sync.Mutex
 	running      bool
 	workersCount int
